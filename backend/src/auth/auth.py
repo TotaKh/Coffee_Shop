@@ -9,18 +9,20 @@ AUTH0_DOMAIN = 'khalawi.us.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'coffee'
 
-## AuthError Exception
+# AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
+# Auth Header
 
 
 def get_token_auth_header():
@@ -64,16 +66,16 @@ def get_token_auth_header():
     return token
 
 
-
 def check_permissions(permission, payload):
     # raise an AuthError if permissions are not included in the payload
     if 'permissions' not in payload:
         raise AuthError({
             'code': 'invalid_claims',
             'description': 'Permissions not included in JWT.'
-            }, 400)
+        }, 400)
 
-    # raise an AuthError if the requested permission string is not in the payload permissions
+    # raise an AuthError if the requested permission string is not in the
+    # payload permissions
     if permission not in payload['permissions']:
         raise AuthError({
             'code': 'unauthorized',
@@ -88,7 +90,7 @@ def verify_decode_jwt(token):
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
     rsa_key = {}
-    
+
     # aise an AuthError if the Auth0 token is not with key id (kid)
     if 'kid' not in unverified_header:
         raise AuthError({
@@ -135,22 +137,20 @@ def verify_decode_jwt(token):
                 'description': 'Unable to parse authentication token.'
             }, 400)
     raise AuthError({
-                'code': 'invalid_header',
+        'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
-            }, 400)
-    
-
+    }, 400)
 
 
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            
+
             token = get_token_auth_header()
             payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
-            
+
             return f(payload, *args, **kwargs)
 
         return wrapper
